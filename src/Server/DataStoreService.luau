@@ -26,26 +26,23 @@ function Wrapper.LoadProfile(player: Player)
 	local userId = player.UserId
 	local key = "Player_" .. userId
 	
+	print("[DataStore] Loading data for " .. player.Name)
+	
 	local success, result = pcall(function()
-		return MainDataStore:UpdateAsync(key, function(oldData)
-			oldData = oldData or { Data = {}, Session = nil }
-			
-			if not SessionManager.IsSessionValid(oldData.Session) then
-				return nil
-			end
-			
-			oldData.Session = SessionManager.CreateSessionToken()
-			return oldData
-		end)
+		return MainDataStore:GetAsync(key)
 	end)
 	
-	if success and result then
-		local profileData = DeepMerge(result.Data, DefaultData)
+	if success then
+		local data = result or table.clone(DefaultData)
+		local profileData = DeepMerge(data, DefaultData)
 		ActiveProfiles[userId] = {
 			Data = profileData,
 			Key = key
 		}
+		print("[DataStore] Successfully loaded for " .. player.Name)
 		return profileData
+	else
+		warn("[DataStore] Failed to load for " .. player.Name .. ": " .. tostring(result))
 	end
 	
 	return nil
@@ -54,23 +51,22 @@ end
 function Wrapper.SaveProfile(player: Player)
 	local userId = player.UserId
 	local profile = ActiveProfiles[userId]
-	if not profile then return end
+	if not profile then 
+		warn("[DataStore] No profile found to save for " .. player.Name)
+		return 
+	end
 	
-	local success = pcall(function()
-		MainDataStore:UpdateAsync(profile.Key, function(oldData)
-			if oldData and oldData.Session and oldData.Session.JobId ~= game.JobId then
-				return nil
-			end
-			
-			return {
-				Data = profile.Data,
-				Session = nil
-			}
-		end)
+	print("[DataStore] Saving data for " .. player.Name)
+	
+	local success, err = pcall(function()
+		MainDataStore:SetAsync(profile.Key, profile.Data)
 	end)
 	
 	if success then
+		print("[DataStore] Successfully saved for " .. player.Name)
 		ActiveProfiles[userId] = nil
+	else
+		warn("[DataStore] Failed to save for " .. player.Name .. ": " .. tostring(err))
 	end
 end
 
