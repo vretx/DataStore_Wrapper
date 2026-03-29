@@ -1,0 +1,22 @@
+{
+  "name": "DataStore_Wrapper",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "DataStore_Wrapper": {
+        "$className": "Folder",
+        "Shared": {
+          "$path": "src/Shared"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "DataStore_Wrapper": {
+        "$className": "Folder",
+        "Server": {
+          "$path": "src/Server"
+        }
+      }
+    }
+  }
+}
